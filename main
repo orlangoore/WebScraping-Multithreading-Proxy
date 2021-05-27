@@ -1,0 +1,67 @@
+######## ###############################################
+
+import requests
+from bs4 import BeautifulSoup as BS
+import concurrent.futures
+import time
+import pandas as pd
+
+# soup = BS(page.text,'html.parser')
+# print(soup.prettify())
+#
+# for i in soup.find_all('div', class_="title"):
+#     print(i.getText())
+#     print(i.find('a').get('href'))
+#
+# for i in soup.find_all('div',class_="image"):
+#     print(i.find('img').get('src'))
+
+
+###################################################
+start = time.time()
+Proxy = "69.30.242.214:2000"
+
+books = []
+
+
+
+
+def number_of_pages():
+    lst = []
+    for i in range(1,51):
+        lst.append(i)
+    return lst
+
+number_of_pagez = number_of_pages()
+
+def scrape_it(page):
+
+    url = requests.get('http://books.toscrape.com/catalogue/page-'+str(page)+'.html',proxies={"http": Proxy, "https": Proxy})
+    soup = BS(url.text,'html.parser')
+
+    for i in soup.find_all('li', class_="col-xs-6 col-sm-4 col-md-3 col-lg-3"):
+        ipi = requests.get('http://httpbin.org/ip')
+        title = i.find('h3').getText()
+        price = i.find('p',class_= "price_color").getText()
+        for k,v in i.find('p', class_="star-rating").attrs.items():
+            star_rating = v[1]
+        almost = str(i.find('div',class_="image_container").find("a")).split("src=")[-1]
+        link = ("http://books.toscrape.com"+almost.split('"')[1])
+        in_stock = str(i.find("p",class_="instock availability").getText()).split()[0]+" "+str(i.find("p",class_="instock availability").getText()).split()[1]
+        in_stocks.append(in_stock)
+        books.append({
+            "title" : title,
+            "price" : price,
+            "star_rating" : star_rating,
+            "link" : link,
+            "in_stock" : in_stock,
+            "IP" : ipi,
+        })
+
+with concurrent.futures.ThreadPoolExecutor() as exector:
+    exector.map(scrape_it,number_of_pagez)
+
+
+print(books)
+end = time.time()
+print(end - start)
